@@ -1,0 +1,3 @@
+models_weights:
+  path_frrcnn: './src/weights/detection/fasterrcnn_resnet50_1_epochs'
+  path_crnn: './src/weights/ocr/crnn_20_epochs_default_parameters'
