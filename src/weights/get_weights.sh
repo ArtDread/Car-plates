@@ -1,0 +1,4 @@
+mkdir ocr
+mkdir detection
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1OGRffplWKb9dYjVkqGcg1ouEWsNUiqKp' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1OGRffplWKb9dYjVkqGcg1ouEWsNUiqKp" -O ocr/crnn_20_epochs_default_parameters && rm -rf /tmp/cookies.txt
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1fG60pBQOcVQ9s9JN6zuyxRCt-x0zOxZP' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1fG60pBQOcVQ9s9JN6zuyxRCt-x0zOxZP" -O detection/fasterrcnn_resnet50_1_epochs && rm -rf /tmp/cookies.txt
