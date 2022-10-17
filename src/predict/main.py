@@ -24,7 +24,7 @@ class GeneralInference:
         ocr_model: str = "crnn",
         display: bool = True,
         debug: bool = False,
-        font_path: str = "./src/utils/fonts/Roboto-Medium.ttf",
+        font_path: str = "./src/tools/fonts/Roboto-Medium.ttf",
     ):
         """
         detection_models (str): fasterrcnn /  ...
