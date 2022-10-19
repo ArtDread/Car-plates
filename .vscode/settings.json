@@ -3,4 +3,14 @@
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
+    "markdownlint.config": {
+        "MD033": {
+            "allowed_elements": [
+                "dl",
+                "dt",
+                "dd",
+                "strong"
+            ]
+        }
+    }
 }
