@@ -1,6 +1,6 @@
 # License plate recognition
 
-Detection and recognition of Russian license plates
+Detection and recognition of Russian license plates.
 
 ## Datasets
 
@@ -16,7 +16,7 @@ Detection and recognition of Russian license plates
 
 Detailed working directory structure presentation.
 
-According to pipeline, there are two independent modules: detection and ocr (o. character recognition) each containing an individual interface for models. Main module unites these modules and provides both car plate detection and recognition for images
+According to pipeline, there are two independent modules: detection and ocr (o. character recognition) each containing an individual interface for models. Main module unites these modules and provides both car plate detection and recognition for images.
 
 ```text
 .
@@ -46,13 +46,13 @@ According to pipeline, there are two independent modules: detection and ocr (o. 
 
 ### Metrics
 
-Metrics evaluation was performed using OCR test dataset
+Metrics evaluation was performed using OCR test dataset.
 
 <dl>
   <dt><strong>Accuracy</strong></dt>
-  <dd>The fraction of truly recognized sequences</dd>
+  <dd>The fraction of truly recognized sequences.</dd>
   <dt><strong>CER</strong></dt>
-  <dd>Сharacter error rate averaged over all sequences</dd>
+  <dd>Сharacter error rate averaged over all sequences.</dd>
 </dl>
 
 | Model         | Accuracy, % | CER, %     |
@@ -68,7 +68,7 @@ Processing...
 
 ### Dependencies
 
-Dependencies are managed with `requirements.txt`
+Dependencies are managed with `requirements.txt`.
 
 ```python
 pip install -r requirements.txt 
@@ -76,7 +76,7 @@ pip install -r requirements.txt
 
 ### Models weights setting
 
-#### For Ubuntu users
+#### For Linux users
 
 1. After cloning the repo, open the terminal in `src/weights` directory
 
@@ -115,6 +115,8 @@ Follow the link to gdrive [weights](https://drive.google.com/drive/folders/1PNfx
 ## Running
 
 Now, when all is settled, you could test the pipeline all by yourself running the `pipeline.ipynb` following the example.
+
+**P.S.** The Install & Run was successfully tested using pyenv virtual environment builded upon python 3.10.5.
 
 ## TODO
 
