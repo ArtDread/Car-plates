@@ -1,42 +1,51 @@
-"""Module provides processing of image and logic for decoding crnn's output."""
-from typing import Dict, List
+"""The module provides processing of image and logic for decoding CRNN's output."""
+from typing import Dict, List, TypeAlias
 
 import cv2
 import numpy as np
 import torch
 from numpy.typing import NDArray
 
+NumpyArray: TypeAlias = NDArray[np.float32]
 
-def process_image(image: NDArray[np.float32]) -> torch.Tensor:
-    """
-    Transform into tensor from numpy.
 
-    :param image: image of cropped car plate, size (H, W, C)
-    :returns: transformed image, size (1, C, H, W)
+def process_image(image: NumpyArray) -> torch.Tensor:
+    """Transform the image format into tensor from numpy.
+
+    Args:
+        image: The image of cropped car plate, size (H, W, C)
+
+    Returns:
+        The transformed image, size (1, C, H, W)
+
     """
     image = cv2.resize(image, (320, 64), interpolation=cv2.INTER_AREA)
     img = torch.from_numpy(image).permute(2, 0, 1).float().unsqueeze(0)
     return img
 
 
-def decode(pred_seq: NDArray[np.float32], idx_to_char: Dict[int, str]) -> str:
-    """
-    Convert predicted indexed tokens by crnn model to chars.
+def decode(pred_seq: NumpyArray, idx_to_char: Dict[int, str]) -> str:
+    """Convert predicted indexed tokens by crnn model to chars.
 
-    :param pred_seq: crnn output, size (1, 18, 23)
-    :param idx_to_char: vocabulary for decoding indexed tokens
-    :returns: decoded car plate text sequence
+    Args:
+        pred_seq: CRNN's output, size (N=1, L, V),
+            where L - the number of task-defined vectors (frames),
+                V - the task-defined vocabulary dimension
+        idx_to_char: Vocabulary for decoding indexed tokens
+
+    Returns:
+        The decoded car plate text sequence
+
     """
     pred_seq = pred_seq[0]
-    # Consists of blank
-    seq = []
+    seq: List[str] = []  # Consists of blanks
     for i in range(len(pred_seq)):
-        # Take max possible class in indexed form
-        label_idx = np.argmax(pred_seq[i])
+        # Define predicted class in indexed form
+        label_idx = np.argmax(pred_seq[i]).item()
         # Convert to char
         seq.append(idx_to_char[label_idx])
-    # Remove blanks
-    out: List[str] = []
+
+    out: List[str] = []  # Consists of no blanks
     for i in range(len(seq)):
         if len(out) == 0:
             if seq[i] != "blank":

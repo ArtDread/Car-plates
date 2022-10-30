@@ -20,6 +20,7 @@ According to pipeline, there are two independent modules: detection and ocr (o. 
 
 ```text
 .
+├── .vscode                 <- Storage of language rules for project
 ├── data                    <- Files such as images for testing pipeline
 ├── notebooks               <- Jupyter notebooks containing training and analysis
 ├── src
@@ -32,14 +33,14 @@ According to pipeline, there are two independent modules: detection and ocr (o. 
 │   │   ├── detection.py    <- Implementation of car plate detection 
 │   │   └── ocr.py          <- Implementation of car plate recognition
 │   ├── tools               <- Extra utilities and tools
-│   └── weights             <- Weights of trained models
-├── .vscode                 <- Storage of language rules for project
-├── mypy.ini                <- MyPy configuration file
-├── setup.cfg               <- Project configuration file
-├── pipeline.ipynb          <- License plate recognition pipeline
+│   └── weights             <- The Weights of trained models
+├── .gitignore              <- The Gitignore configuration
+├── LICENSE                 <- The MIT License file
+├── README.md               <- The top-level README file
+├── mypy.ini                <- The MyPy configuration file
+├── pipeline.ipynb          <- The license plate recognition pipeline
 ├── requirements.txt        <- The requirements file for making prediction along the pipeline  
-├── README.md              
-└── LICENSE
+└── setup.cfg               <- The project configuration file
 ```
 
 ## Results
