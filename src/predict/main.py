@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import Dict, List, Literal, Optional, Tuple, TypeAlias
+from typing import Dict, List, Literal, Optional, Tuple, TypeAlias, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -12,14 +12,15 @@ from PIL.ImageDraw import ImageDraw
 from PIL.ImageFont import ImageFont
 
 from ..tools.find_font_size import find_font_size
-from .detection import FasterRCNNInference
+from .detection import CascadeClassifierInference, FasterRCNNInference
 from .ocr import CRNNInference
 
 Outcome: TypeAlias = Optional[
     Tuple[List[str], Optional[Image], Optional[Dict[str, float]]]
 ]
 
-DetectionModel: TypeAlias = Literal["fasterrcnn"]
+DetectionModel: TypeAlias = Literal["fasterrcnn", "cascadeclassifier"]
+DetectionModelAttr: TypeAlias = Union[FasterRCNNInference, CascadeClassifierInference]
 OcrModel: TypeAlias = Literal["crnn"]
 NumpyArray: TypeAlias = NDArray[np.float32]
 
@@ -36,6 +37,7 @@ class GeneralInference:
         display: Display box and license plate sequence on output or not
         debug: Save runtime value for each part or not
         font: A path to filename containing a TrueType font
+        combination_name: The name of chosen model combination
 
     """
 
@@ -47,8 +49,11 @@ class GeneralInference:
         debug: bool = False,
         font: str = "./src/tools/fonts/Roboto-Medium.ttf",
     ):
+        self.detection_model: DetectionModelAttr
         if detection_model == "fasterrcnn":
             self.detection_model = FasterRCNNInference()
+        elif detection_model == "cascadeclassifier":
+            self.detection_model = CascadeClassifierInference()
         else:
             raise ValueError("The given detection model not found")
 
@@ -60,19 +65,25 @@ class GeneralInference:
         self.display = display
         self.debug = debug
         self.font = font
+        self.combination_name = f"{detection_model} + {ocr_model}"
 
     def _crop_carplate_image(self, image: Image, bbox: NumpyArray) -> Image:
-        return image.crop((bbox[0][0], bbox[0][1], bbox[0][2], bbox[0][3]))
+        return image.crop((bbox[0], bbox[1], bbox[2], bbox[3]))
 
     def _demonstration(self, image: Image, bbox: NumpyArray, text: str) -> Image:
-        font_size = find_font_size(text, self.font, image, 0.1)
+        font_size = find_font_size(text, self.font, image, 0.08)
         roboto_font: ImageFont = ImgFont.truetype(self.font, font_size)
         draw: ImageDraw = ImgDraw.Draw(image)
 
-        draw.rectangle(
-            (bbox[0][0], bbox[0][1], bbox[0][2], bbox[0][3]), outline=128, width=4
+        draw.rectangle((bbox[0], bbox[1], bbox[2], bbox[3]), outline=128, width=4)
+        draw.text(
+            (bbox[0], bbox[3]),
+            text,
+            fill=(255, 128, 0),
+            font=roboto_font,
+            stroke_width=round(0.05 * font_size),
+            stroke_fill=(0, 0, 0),
         )
-        draw.text((bbox[0][0], bbox[0][3]), text, fill=(255, 128, 0), font=roboto_font)
         return image
 
     def detect_by_image(self, image: Image) -> Outcome:
@@ -94,7 +105,7 @@ class GeneralInference:
             display_image = image.copy()
 
         start_time_det: float = time.time()
-        detection_results: Optional[List[NumpyArray]] = self.detection_model(image)
+        detection_results: Optional[NumpyArray] = self.detection_model(image)
         end_time_det: float = time.time()
 
         start_time_ocr: float = time.time()

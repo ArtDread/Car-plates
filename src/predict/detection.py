@@ -1,6 +1,7 @@
 """The module contains various implementations of car plate detection logic."""
-from typing import Dict, List, Optional, TypeAlias
+from typing import Dict, List, Optional, Tuple, TypeAlias, Union
 
+import cv2
 import numpy as np
 import torch
 import torchvision
@@ -61,14 +62,14 @@ class FasterRCNNInference:
         return model
 
     @torch.no_grad()
-    def __call__(self, image: Image) -> Optional[List[NumpyArray]]:
+    def __call__(self, image: Image) -> Optional[NumpyArray]:
         """Fulfilling the detection task.
 
         Args:
             image: An image likely including car plate
 
         Returns:
-            List of predicted boxes or None if prediction is very uncertain
+            List of predicted bboxes or None if prediction is very uncertain
 
         """
         img = torchvision.transforms.ToTensor()(image)
@@ -83,5 +84,59 @@ class FasterRCNNInference:
 
         if new_preds:
             return apply_nms(new_preds)
+        else:
+            return None
+
+
+class CascadeClassifierInference:
+    """This class is implementation of detection logic with Cascade Classifier.
+
+    Attributes:
+       carplate_haar_cascade: OpenCV Haar Cascade classifier class for object detection
+
+    """
+
+    def __init__(self):
+        self.carplate_haar_cascade = cv2.CascadeClassifier(
+            "./src/configs/haarcascade_russian_plate_number.xml"
+        )
+
+    def _convert_bbox_format(self, bboxes: NDArray[np.int32]) -> NumpyArray:
+        """Convert from (x, y, w, h) to (x, y, x + w, y + h) and change dtype.
+
+        Args:
+            bboxes: Boundary boxes where car plates are detected
+
+        Returns:
+            Converted bboxes with new proper dtype
+
+        """
+        for bbox in bboxes:
+            bbox[2], bbox[3] = bbox[0] + bbox[2], bbox[1] + bbox[3]
+        return bboxes.astype("float32")
+
+    def __call__(self, image: Image) -> Optional[NumpyArray]:
+        """Fulfilling the detection task.
+
+        Args:
+            image: An image likely including car plate
+
+        Returns:
+            List of predicted bboxes or None if prediction is very uncertain
+
+        """
+        img = np.array(image)
+
+        bboxes: Union[Tuple, NDArray[np.int32]]
+        bboxes = self.carplate_haar_cascade.detectMultiScale(
+            img,
+            # Define how much the image size is reduced at each image scale
+            scaleFactor=1.1,
+            # Define the quality of detection
+            minNeighbors=5,
+        )
+
+        if isinstance(bboxes, np.ndarray):
+            return self._convert_bbox_format(bboxes)
         else:
             return None

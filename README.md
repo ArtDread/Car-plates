@@ -125,7 +125,6 @@ Now, when all is settled, you could test the pipeline all by yourself running th
 
 - Rate performance (time costs) especially after adding new fast detection models
 - Implement detection by video (again after adding new detection models)
-- Code refactoring: missing docstrings and static typing problems
 
 ### Detection Task
 

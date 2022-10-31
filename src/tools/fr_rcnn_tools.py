@@ -38,7 +38,7 @@ def preds_but_valid_scores(
 
 def apply_nms(
     preds: List[Dict[str, torch.Tensor]], iou_threshold: float = 0.5
-) -> List[NumpyArray]:
+) -> NumpyArray:
     """Apply Non-Maximum Suppression.
 
     Args:
@@ -54,4 +54,4 @@ def apply_nms(
         inds = torchvision.ops.nms(image["boxes"], image["scores"], iou_threshold)
         image["boxes"] = image["boxes"][inds]
         bboxes.append(image["boxes"].numpy())
-    return bboxes
+    return bboxes[0]
