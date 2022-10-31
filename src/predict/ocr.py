@@ -60,7 +60,7 @@ class CRNNInference:
         img = process_image(image).to(self.device)
 
         predict: torch.Tensor = self.crnn(img)
-        pred_seq: NumpyArray = predict.detach().to("cpu").numpy()
+        pred_seq: NumpyArray = predict.to("cpu").numpy()
         seq_pred = decode(pred_seq, self.idx_to_char)
 
         return seq_pred if len(seq_pred) > 0 else "Couldn't recognize any symbols"

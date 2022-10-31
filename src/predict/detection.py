@@ -76,8 +76,7 @@ class FasterRCNNInference:
 
         preds: List[Dict[str, torch.Tensor]] = self.fr_rcnn([img.to(self.device)])
         preds = [
-            {k: v.detach().to("cpu") for k, v in prediction.items()}
-            for prediction in preds
+            {k: v.to("cpu") for k, v in prediction.items()} for prediction in preds
         ]
 
         new_preds = preds_but_valid_scores(preds)
