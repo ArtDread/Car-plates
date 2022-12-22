@@ -5,12 +5,13 @@ import cv2
 import numpy as np
 import torch
 from numpy.typing import NDArray
+from PIL.Image import Image
 
 NumpyArray: TypeAlias = NDArray[np.float32]
 
 
-def process_image(image: NumpyArray) -> torch.Tensor:
-    """Transform the image format into tensor from numpy.
+def process_image(image: Image) -> torch.Tensor:
+    """Transform the image format into tensor from Image.
 
     Args:
         image: The image of cropped car plate, size (H, W, C)
@@ -19,9 +20,10 @@ def process_image(image: NumpyArray) -> torch.Tensor:
         The transformed image, size (1, C, H, W)
 
     """
-    image = cv2.resize(image, (320, 64), interpolation=cv2.INTER_AREA)
-    img = torch.from_numpy(image).permute(2, 0, 1).float().unsqueeze(0)
-    return img
+    image_numpy = np.asarray(image).astype(np.float32) / 255.0
+    image_numpy = cv2.resize(image_numpy, (320, 64), interpolation=cv2.INTER_AREA)
+    image_tensor = torch.from_numpy(image_numpy).permute(2, 0, 1).float().unsqueeze(0)
+    return image_tensor
 
 
 def decode(pred_seq: NumpyArray, idx_to_char: Dict[int, str]) -> str:
