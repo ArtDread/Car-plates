@@ -13,7 +13,7 @@ from PIL.ImageFont import ImageFont
 
 from ..tools.find_font_size import find_font_size
 from .detection import CascadeClassifierInference, FasterRCNNInference
-from .ocr import CRNNInference
+from .ocr import CRNNInference, EasyOCRInference
 
 Outcome: TypeAlias = Optional[
     Tuple[List[str], Optional[Image], Optional[Dict[str, float]]]
@@ -21,7 +21,8 @@ Outcome: TypeAlias = Optional[
 
 DetectionModel: TypeAlias = Literal["fasterrcnn", "cascadeclassifier"]
 DetectionModelAttr: TypeAlias = Union[FasterRCNNInference, CascadeClassifierInference]
-OcrModel: TypeAlias = Literal["crnn"]
+RecognitionModelAttr: TypeAlias = Union[CRNNInference, EasyOCRInference]
+OcrModel: TypeAlias = Literal["crnn", "easyocr"]
 NumpyArray: TypeAlias = NDArray[np.float32]
 
 
@@ -57,8 +58,11 @@ class GeneralInference:
         else:
             raise ValueError("The given detection model not found")
 
+        self.ocr_model: RecognitionModelAttr
         if ocr_model == "crnn":
             self.ocr_model = CRNNInference()
+        elif ocr_model == "easyocr":
+            self.ocr_model = EasyOCRInference()
         else:
             raise ValueError("The given ocr model not found")
 
@@ -111,12 +115,7 @@ class GeneralInference:
         start_time_ocr: float = time.time()
         if detection_results is not None:
             for bbox in detection_results:
-                img = (
-                    np.asarray(self._crop_carplate_image(image, bbox)).astype(
-                        np.float32
-                    )
-                    / 255.0
-                )
+                img = self._crop_carplate_image(image, bbox)
 
                 seq_recognition: str = self.ocr_model(img)
                 ocr_results.append(seq_recognition)

@@ -1,10 +1,13 @@
 """The module contains various implementations of a car plate recognition logic."""
-from typing import Dict, TypeAlias
+from string import digits
+from typing import Dict, List, Tuple, TypeAlias
 
+import easyocr  # type:ignore
 import numpy as np
 import torch
 import yaml
 from numpy.typing import NDArray
+from PIL.Image import Image
 
 from ..models.ocr.CRNN import CRNN
 from ..tools.crnn_tools import decode, process_image
@@ -13,6 +16,7 @@ with open("./src/configs/paths.yaml") as file:
     models_weights_path: Dict[str, str] = yaml.safe_load(file)["models_weights"]
 
 NumpyArray: TypeAlias = NDArray[np.float32]
+EasyOCROutcome: TypeAlias = List[Tuple[List[List[int]], str, float]]
 
 
 class CRNNInference:
@@ -47,11 +51,11 @@ class CRNNInference:
         self.crnn.eval()
 
     @torch.no_grad()
-    def __call__(self, image: NumpyArray) -> str:
+    def __call__(self, image: Image) -> str:
         """Fulfilling the OCR task.
 
         Args:
-            image: The cropped car plate image from detection part of size (H, W, C)
+            image: The cropped car plate image from detection part
 
         Returns:
             Predicted sequence text or string-warning if prediction is nothing
@@ -62,5 +66,47 @@ class CRNNInference:
         predict: torch.Tensor = self.crnn(img)
         pred_seq: NumpyArray = predict.to("cpu").numpy()
         seq_pred = decode(pred_seq, self.idx_to_char)
+
+        return seq_pred if len(seq_pred) > 0 else "Couldn't recognize any symbols"
+
+
+class EasyOCRInference:
+    """This class is implementation of a recognition logic with easyOCR framework.
+
+    Attributes:
+        device: The execution device, cpu or gpu if possible
+        easy_default: The EasyOCR Reader model
+        characters_subset: Force EasyOCR to recognize only specific subset of characters
+
+    """
+
+    def __init__(self, device=None):
+        if device is None:
+            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+
+        self.easy_default = easyocr.Reader(["en"], gpu=(self.device.type != "cpu"))
+        self.characters_subset = digits + "ABEKMHOPCTYX"
+
+    def __call__(self, image: Image) -> str:
+        """Fulfilling the OCR task.
+
+        Args:
+            image: The cropped car plate image from detection part
+
+        Returns:
+            Predicted sequence text or string-warning if prediction is nothing
+
+        """
+        image_numpy = np.asarray(image).astype(np.uint8)  # to shape (H, W, C)
+        predictions: EasyOCROutcome = self.easy_default.readtext(
+            image_numpy, allowlist=self.characters_subset
+        )
+
+        # Remove spaces
+        processed_seqs = ["".join(item[-2].split()) for item in predictions]
+        # Merge sequences if a few
+        seq_pred = "".join(processed_seqs)
 
         return seq_pred if len(seq_pred) > 0 else "Couldn't recognize any symbols"
